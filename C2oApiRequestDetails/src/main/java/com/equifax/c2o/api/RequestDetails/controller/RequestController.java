@@ -1,25 +1,31 @@
 package com.equifax.c2o.api.RequestDetails.controller;
 
+import com.equifax.c2o.api.RequestDetails.dto.PayloadResponseDTO;
 import com.equifax.c2o.api.RequestDetails.dto.RequestDetailsDTO;
 import com.equifax.c2o.api.RequestDetails.dto.RequestDetailsResponseDTO;
 import com.equifax.c2o.api.RequestDetails.dto.StatusUpdateRequest;
+import com.equifax.c2o.api.RequestDetails.service.PayloadService;
 import com.equifax.c2o.api.RequestDetails.service.RequestDetailsService;
 import com.equifax.c2o.api.RequestDetails.service.StatusUpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 
 @RestController
-@RequestMapping("/status-api")
-public class RequestDetailsController {
+@RequestMapping("/requests")
+public class RequestController {
 
     @Autowired
     private RequestDetailsService requestDetailsService;
 
     @Autowired
     private StatusUpdateService statusUpdateService;
+
+    @Autowired
+    private PayloadService payloadService;
 
     @GetMapping
     public RequestDetailsResponseDTO getRequestDetails(
@@ -57,5 +63,14 @@ public class RequestDetailsController {
 
         statusUpdateService.updateStatus(statusUpdateRequest);
         return ResponseEntity.ok("CAPI Status update received successfully");
+    }
+
+    @GetMapping("/{correlationId}/payload")
+    public ResponseEntity<PayloadResponseDTO> getPayload(
+            @PathVariable("correlationId") String correlationId,
+            @RequestHeader(value = "ReqType", defaultValue = "RequestPayload") String reqType) {
+
+        PayloadResponseDTO payloadResponseDTO = payloadService.getPayload(correlationId, reqType);
+        return ResponseEntity.ok(payloadResponseDTO);
     }
 }

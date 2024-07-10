@@ -19,25 +19,19 @@ public class RequestDetailsService {
     private RequestRepository requestRepository;
 
     public RequestDetailsResponseDTO getRequestDetails(RequestDetailsDTO requestDetailsDTO) {
-        // Validate input criteria
         validateRequestDetails(requestDetailsDTO);
 
-        // Get current timestamp for toDate if not provided
         Timestamp toDate = requestDetailsDTO.getToDate() != null ? requestDetailsDTO.getToDate() : new Timestamp(System.currentTimeMillis());
 
-        // Fetch data based on criteria
         List<Request> requests = fetchRequests(requestDetailsDTO, toDate);
 
-        // Paginate results
         List<Request> paginatedRequests = requests.stream()
                 .skip(requestDetailsDTO.getStartIndex())
                 .limit(requestDetailsDTO.getPageLength())
                 .collect(Collectors.toList());
 
-        // Map to DTO
         List<RequestDetailsDTO> requestDetails = paginatedRequests.stream().map(this::mapToRequestDetailsDTO).collect(Collectors.toList());
 
-        // Prepare response
         RequestDetailsResponseDTO responseDTO = new RequestDetailsResponseDTO();
         responseDTO.setTotalRecords(requests.size());
         responseDTO.setResults(requestDetails);
@@ -53,8 +47,6 @@ public class RequestDetailsService {
         if (requestDetailsDTO.getPageLength() < 1 || requestDetailsDTO.getPageLength() > 50) {
             throw new CustomException("EFX_INVALID_SEARCH_CRITERIA", "Invalid page length");
         }
-
-        // Add other validations as required
     }
 
     private List<Request> fetchRequests(RequestDetailsDTO requestDetailsDTO, Timestamp toDate) {
