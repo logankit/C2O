@@ -23,7 +23,15 @@ public class RequestDetailsService {
 
         Timestamp toDate = requestDetailsDTO.getToDate() != null ? requestDetailsDTO.getToDate() : new Timestamp(System.currentTimeMillis());
 
-        List<Request> requests = fetchRequests(requestDetailsDTO, toDate);
+        List<Request> requests = requestRepository.findRequests(
+                requestDetailsDTO.getSourceSystem(),
+                requestDetailsDTO.getFromDate(),
+                toDate,
+                requestDetailsDTO.getBusinessUnit(),
+                requestDetailsDTO.getContractId() != null ? Long.parseLong(requestDetailsDTO.getContractId()) : null,
+                requestDetailsDTO.getOrderId() != null ? Long.parseLong(requestDetailsDTO.getOrderId()) : null,
+                requestDetailsDTO.getRequestStatus() != null ? Integer.parseInt(requestDetailsDTO.getRequestStatus()) : null
+        );
 
         List<Request> paginatedRequests = requests.stream()
                 .skip(requestDetailsDTO.getStartIndex())
@@ -46,18 +54,6 @@ public class RequestDetailsService {
 
         if (requestDetailsDTO.getPageLength() < 1 || requestDetailsDTO.getPageLength() > 50) {
             throw new CustomException("EFX_INVALID_SEARCH_CRITERIA", "Invalid page length");
-        }
-    }
-
-    private List<Request> fetchRequests(RequestDetailsDTO requestDetailsDTO, Timestamp toDate) {
-        if (requestDetailsDTO.getBusinessUnit() != null && !requestDetailsDTO.getBusinessUnit().isEmpty()) {
-            return requestRepository.findByBusinessUnitInAndCreatedDateBetween(requestDetailsDTO.getBusinessUnit(), requestDetailsDTO.getFromDate(), toDate);
-        } else if (requestDetailsDTO.getContractId() != null) {
-            return requestRepository.findByContractIdAndCreatedDateBetween(Long.parseLong(requestDetailsDTO.getContractId()), requestDetailsDTO.getFromDate(), toDate);
-        } else if (requestDetailsDTO.getOrderId() != null) {
-            return requestRepository.findByOrderIdAndCreatedDateBetween(Long.parseLong(requestDetailsDTO.getOrderId()), requestDetailsDTO.getFromDate(), toDate);
-        } else {
-            return requestRepository.findBySourceSystemIdAndCreatedDateBetween(requestDetailsDTO.getSourceSystem(), requestDetailsDTO.getFromDate(), toDate);
         }
     }
 
